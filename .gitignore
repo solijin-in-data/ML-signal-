@@ -1,0 +1,54 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files
+data/unprocessed_data/*.csv
+data/processed_data/*.csv
+data/processed_data/*.xlsx
+data/processed_data/*.parquet
+
+# Keep folder structure
+!data/unprocessed_data/.gitkeep
+!data/processed_data/.gitkeep
+
+# Output files
+outputs/*.csv
+outputs/*.xlsx
+outputs/charts/*.png
+outputs/charts/*.jpg
+
+# Keep output folders
+!outputs/.gitkeep
+!outputs/charts/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Model artifacts
+models/
+*.pkl
+*.joblib
+*.json
+
+# Local config
+.env
+.env.local
