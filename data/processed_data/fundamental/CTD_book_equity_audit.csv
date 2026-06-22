@@ -1,0 +1,9 @@
+﻿Check,Value,Status
+book_equity_total_account,OWNER'S EQUITY,ok
+nci_accounts_found,Minority interests; Minority Interest,ok
+total_assets_account,TOTAL ASSETS,ok
+total_sources_account,TOTAL RESOURCES,ok
+max_abs_balance_difference,0.0,ok
+rows,65,ok
+start_period,Q1 2010,ok
+end_period,Q1 2026,ok

@@ -1,0 +1,3 @@
+﻿Ticker,Profile,Experiment_Mode,Feature_Set,Decision,Reason,Research_Status,Score_Delta_vs_Baseline,Edge_vs_Breakeven_Delta_vs_Baseline,Avg_Return_Delta_vs_Baseline,Expectancy_Per_Day_Delta_vs_Baseline,Timeout_Rate_Delta_vs_Baseline,Trades_Delta_vs_Baseline
+CTD,SWING,fixed_setup,candidate_recovery_valuation_v1,RESEARCH_ONLY,Candidate has mixed or weak evidence.,RESEARCH_EDGE,,,,,,
+CTD,SWING,reoptimized,candidate_recovery_valuation_v1,RESEARCH_ONLY,Candidate has mixed or weak evidence.,TRADEABLE_EDGE,,,,,,

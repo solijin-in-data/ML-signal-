@@ -1,0 +1,5 @@
+# Local secrets
+.env
+
+# Vendor raw/cache data
+data/vendor_data/

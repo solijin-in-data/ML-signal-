@@ -1,0 +1,12 @@
+﻿Check,Value,Status
+rows_total,4091,ok
+rows_with_pb,4016,ok
+rows_missing_pb,75,review
+start_date,2010-01-21,ok
+end_date,2026-06-22,ok
+pb_min,0.3438806318199262,ok
+pb_median,1.9427178861715988,ok
+pb_max,13.294669025330776,ok
+latest_pb,0.8532239707503616,ok
+lookahead_leakage_rows,0,ok
+ticker,CTD,ok
