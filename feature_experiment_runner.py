@@ -325,6 +325,20 @@ def get_feature_sets() -> dict[str, list[str]]:
         for name, cols in feature_sets.items()
     }
 
+# =============================================================================
+# PHASE 2.2 EXTERNAL FEATURE REGISTRY
+# =============================================================================
+# Prefer the extracted registry module. Keep the local implementation above as a
+# fallback during the transition period.
+try:
+    from ml_signal.features.registry import get_feature_sets as _external_get_feature_sets
+    get_feature_sets = _external_get_feature_sets
+except Exception as exc:
+    logger.warning(
+        "Could not import external feature registry. Falling back to local get_feature_sets. error=%s",
+        exc,
+    )
+
 
 # =============================================================================
 # CANDIDATE FEATURE ENGINEERING
