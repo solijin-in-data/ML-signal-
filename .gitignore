@@ -43,11 +43,13 @@ outputs/charts/*.jpg
 *.log
 logs/
 
-# Model artifacts
-models/
+# Trained model artifacts only
+outputs/models/
+artifacts/models/
 *.pkl
 *.joblib
-*.json
+*.xgb
+*.ubj
 
 # Generated outputs
 outputs/

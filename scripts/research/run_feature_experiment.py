@@ -13,7 +13,30 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
 
 import config as cfg
-import main_signal_radar_v2 as radar
+# =============================================================================
+# PHASE 2 CORE MODULE IMPORT
+# =============================================================================
+# The research runner now uses the extracted reusable core modules.
+# This keeps the command-line behavior the same while moving reusable logic
+# toward src/ml_signal/.
+try:
+    from ml_signal import core_compat as radar
+except ModuleNotFoundError:
+    import sys
+
+    _HERE = Path(__file__).resolve()
+    _SRC_CANDIDATES = [
+        _HERE.parent / "src",
+        _HERE.parent.parent / "src",
+        _HERE.parent.parent.parent / "src",
+    ]
+
+    for _SRC_DIR in _SRC_CANDIDATES:
+        if (_SRC_DIR / "ml_signal").exists():
+            sys.path.insert(0, str(_SRC_DIR))
+            break
+
+    from ml_signal import core_compat as radar
 
 
 warnings.filterwarnings("ignore")
