@@ -203,8 +203,8 @@ def read_csv_smart(file_path: Path) -> pd.DataFrame:
 
     if last_error is not None:
         raise last_error
-    
-    raise RuntimeError(f"Counld not read CSV file: {file_path}")
+
+    raise RuntimeError(f"Could not read CSV file: {file_path}")
 
 
 def coalesce_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -217,29 +217,17 @@ def coalesce_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     result = pd.DataFrame(index=df.index)
 
-    unique_columns = pd.Index(df.columns).drop_duplicates()
+    for col in pd.unique(df.columns):
+        matching_cols = [column for column in df.columns if column == col]
+        subset = df.loc[:, matching_cols].copy()
 
-    for col in unique_columns:
-        positions = [
-            idx for idx, column_name in enumerate(df.columns)
-            if column_name == col
-        ]
-
-        subset = df.take(positions, axis="columns")
-
-        if len(positions) == 1:
-            series = cast(
-                pd.Series,
-                subset.take([0], axis="columns").squeeze(axis="columns"),
-            )
+        if subset.shape[1] == 1:
+            first_col = subset.columns[0]
+            result[str(col)] = subset[first_col]
         else:
             filled = subset.bfill(axis="columns")
-            series = cast(
-                pd.Series,
-                filled.take([0], axis="columns").squeeze(axis="columns"),
-            )
-
-        result[str(col)] = series
+            first_col = filled.columns[0]
+            result[str(col)] = filled[first_col]
 
     return result
 
