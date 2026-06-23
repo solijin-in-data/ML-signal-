@@ -459,6 +459,22 @@ def add_candidate_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # =============================================================================
+# PHASE 2.3 EXTERNAL CANDIDATE FEATURE ENGINEERING
+# =============================================================================
+# Prefer the extracted candidate feature module. Keep the local implementation
+# above as a fallback during the transition period.
+try:
+    from ml_signal.features.candidate import add_candidate_features as _external_add_candidate_features
+    add_candidate_features = _external_add_candidate_features
+except Exception as exc:
+    logger.warning(
+        "Could not import external candidate features. Falling back to local add_candidate_features. error=%s",
+        exc,
+    )
+
+
+
+# =============================================================================
 # VALUATION FEATURE LOADING
 # =============================================================================
 
