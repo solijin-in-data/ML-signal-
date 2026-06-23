@@ -1,72 +1,49 @@
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+*.so
+.Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.coverage
+htmlcov/
 
 # Virtual environments
 .venv/
 venv/
 env/
+ENV/
 
-# IDE settings
+# IDE / OS
 .vscode/
 .idea/
-
-# OS files
 .DS_Store
 Thumbs.db
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Data files
-data/unprocessed_data/*.csv
-data/processed_data/*.csv
-data/processed_data/*.xlsx
-data/processed_data/*.parquet
-
-# Keep folder structure
-!data/unprocessed_data/.gitkeep
-!data/processed_data/.gitkeep
-
-# Output files
-outputs/*.csv
-outputs/*.xlsx
-outputs/charts/*.png
-outputs/charts/*.jpg
-
-# Keep output folders
-!outputs/.gitkeep
-!outputs/charts/.gitkeep
-
-# Logs
+# Local artifacts
+*.bak
+*.bak_*
+*.tmp
 *.log
+
+# Patch-generated backups
+*.bak_before_*
+
+# Local runtime output
+outputs/
 logs/
 
-# Trained model artifacts only
-outputs/models/
-artifacts/models/
-*.pkl
-*.joblib
-*.xgb
-*.ubj
+# Local notebooks checkpoints
+.ipynb_checkpoints/
 
-# Generated outputs
-outputs/
-.tmp_frozen_grid_backups/
-.tmp_frozen_walkforward_backups/
-
-# Local config
+# Local secrets
 .env
-.env.local
+.env.*
+*.pem
+*.key
 
-# Local backups
-*.bak
-*.backup
-.bak_*
-
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+# Do not ignore source code, configs, reports, or archived scripts by default.
