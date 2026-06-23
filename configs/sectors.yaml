@@ -1,0 +1,7 @@
+sectors:
+  construction:
+    feature_modules: [base_price_volume, trend, recovery, liquidity, valuation, sectors.construction]
+  banking:
+    feature_modules: [base_price_volume, trend, recovery, liquidity, valuation, sectors.banking]
+  steel:
+    feature_modules: [base_price_volume, trend, recovery, liquidity, valuation, sectors.steel]

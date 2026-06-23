@@ -43,12 +43,30 @@ outputs/charts/*.jpg
 *.log
 logs/
 
-# Model artifacts
-models/
+# Trained model artifacts only
+outputs/models/
+artifacts/models/
 *.pkl
 *.joblib
-*.json
+*.xgb
+*.ubj
+
+# Generated outputs
+outputs/
+.tmp_frozen_grid_backups/
+.tmp_frozen_walkforward_backups/
 
 # Local config
 .env
 .env.local
+
+# Local backups
+*.bak
+*.backup
+.bak_*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

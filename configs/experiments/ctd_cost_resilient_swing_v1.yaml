@@ -1,0 +1,39 @@
+experiment:
+  name: ctd_cost_resilient_swing_v1
+  ticker: CTD
+  profile: SWING
+  feature_set: candidate_cost_resilient_recovery_no_noise_v1
+
+frozen_setup:
+  lookahead: 40
+  tp: 0.10
+  sl: -0.05
+  threshold: 0.60
+
+risk_assumptions:
+  round_trip_cost_base: 0.003
+  round_trip_cost_stress: 0.005
+  min_edge_vs_breakeven: 0.02
+
+validation_summary:
+  cost_0_003:
+    pass_periods: 3
+    periods: 4
+    min_edge: 0.0867
+    avg_return: 0.0348
+    min_return: 0.0265
+    total_trades: 887
+  cost_0_005:
+    pass_periods: 3
+    periods: 4
+    min_edge: 0.0733
+    avg_return: 0.0348
+    min_return: 0.0265
+    total_trades: 887
+
+status:
+  stage: production_candidate_cost_resilient
+  notes: >
+    Best frozen setup after cost-resilient feature experiment. Uses liquidity
+    and recovery-quality features while excluding noise-filter features, which
+    weakened the full candidate in CTD tests.
