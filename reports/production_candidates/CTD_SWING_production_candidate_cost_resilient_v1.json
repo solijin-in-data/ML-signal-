@@ -1,0 +1,54 @@
+{
+  "ticker": "CTD",
+  "profile": "SWING",
+  "candidate_name": "production_candidate_cost_resilient_v1",
+  "display_feature_set": "candidate_cost_resilient_recovery_no_noise_v1",
+  "source_feature_set": "ablation_cost_resilient_recovery_minus_noise_filter_v1",
+  "decision": "PROMOTE_TO_PRODUCTION_CANDIDATE",
+  "reason": "Frozen grid evidence satisfies the acceptance rules under the selected cost assumption.",
+  "setup": {
+    "lookahead": 40.0,
+    "tp": 0.1,
+    "sl": -0.05,
+    "threshold": 0.6,
+    "round_trip_cost": 0.005
+  },
+  "metrics": {
+    "periods": 4.0,
+    "pass_periods": 3.0,
+    "pass_rate": 0.75,
+    "avg_edge": 0.1122852614208788,
+    "min_edge": 0.0733333333333333,
+    "avg_return": 0.0348225473244018,
+    "min_return": 0.0265240352769133,
+    "total_trades": 887.0,
+    "frozen_strict_candidate": true
+  },
+  "acceptance_checks": [
+    {
+      "Rule": "Pass_Periods >= 3",
+      "Observed": "3",
+      "Status": "PASS"
+    },
+    {
+      "Rule": "Min_Edge >= 2.00%",
+      "Observed": "7.33%",
+      "Status": "PASS"
+    },
+    {
+      "Rule": "Avg_Return >= 2.00%",
+      "Observed": "3.48%",
+      "Status": "PASS"
+    },
+    {
+      "Rule": "Total_Trades >= 300",
+      "Observed": "887",
+      "Status": "PASS"
+    }
+  ],
+  "source": {
+    "csv": "C:\\Users\\tuana\\OneDrive\\Documents\\GitHub\\ML-signal-\\outputs\\walkforward_frozen_grid\\CTD_SWING_frozen_grid_stability_score.csv",
+    "modified": "2026-06-23T14:23:01"
+  },
+  "generated_at": "2026-06-23T14:35:14"
+}
