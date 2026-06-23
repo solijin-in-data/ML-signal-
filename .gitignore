@@ -47,3 +47,9 @@ logs/
 *.key
 
 # Do not ignore source code, configs, reports, or archived scripts by default.
+
+# Local market data
+data/unprocessed_data/*.csv
+data/processed_data/*.csv
+data/processed_data/valuation/*.csv
+!data/**/.gitkeep
