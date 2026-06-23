@@ -1,22 +1,8 @@
-ticker: CTD
-profile: SWING
-
-candidate_name: production_candidate_cost_resilient_v1
-feature_set: candidate_cost_resilient_recovery_no_noise_v1
-
-lookahead: 40
-tp: 0.10
-sl: -0.05
-threshold: 0.60
-
-round_trip_cost: 0.005
-min_edge_vs_breakeven: 0.02
-watch_margin: 0.05
-
 experiment:
   name: ctd_cost_resilient_swing_v1
   ticker: CTD
   profile: SWING
+  candidate_name: production_candidate_cost_resilient_v1
   feature_set: candidate_cost_resilient_recovery_no_noise_v1
 
 frozen_setup:
@@ -29,6 +15,7 @@ risk_assumptions:
   round_trip_cost_base: 0.003
   round_trip_cost_stress: 0.005
   min_edge_vs_breakeven: 0.02
+  watch_margin: 0.05
 
 validation_summary:
   cost_0_003:

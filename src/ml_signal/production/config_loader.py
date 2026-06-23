@@ -42,17 +42,15 @@ def _parse_scalar(value: str) -> Any:
 
 def _simple_yaml_load(text: str) -> dict[str, Any]:
     """
-    Small fallback parser for simple project config files.
+    Lightweight fallback YAML parser for simple project config files.
 
-    It supports:
-    - top-level `key: value`
-    - one-level nested dictionaries via indentation
-
-    PyYAML is used when available. This fallback keeps the production runner usable
-    in lightweight environments.
+    Supports:
+    - top-level key: value
+    - one-level nested dictionaries
+    - two-level nested dictionaries for validation metadata
     """
     root: dict[str, Any] = {}
-    current_section: str | None = None
+    stack: list[tuple[int, dict[str, Any]]] = [(-1, root)]
 
     for raw_line in text.splitlines():
         line = raw_line.rstrip()
@@ -70,19 +68,16 @@ def _simple_yaml_load(text: str) -> dict[str, Any]:
         key = key.strip()
         value = value.strip()
 
-        if indent == 0 and value == "":
-            current_section = key
-            root[current_section] = {}
-            continue
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
 
-        if indent == 0:
-            current_section = None
-            root[key] = _parse_scalar(value)
-            continue
+        parent = stack[-1][1]
 
-        if current_section is not None:
-            root.setdefault(current_section, {})
-            root[current_section][key] = _parse_scalar(value)
+        if value == "":
+            parent[key] = {}
+            stack.append((indent, parent[key]))
+        else:
+            parent[key] = _parse_scalar(value)
 
     return root
 
@@ -145,6 +140,7 @@ def _first_present(
         if key in data and data[key] is not None:
             return data[key]
 
+    # Backward-compatible sections from earlier patches.
     for section_name in ["candidate", "production_candidate", "setup", "model", "strategy"]:
         section = data.get(section_name)
 
@@ -154,6 +150,45 @@ def _first_present(
                     return section[key]
 
     return default
+
+
+def _deep_first_present(
+    data: dict[str, Any],
+    paths: list[tuple[str, ...]],
+    default: Any = None,
+) -> Any:
+    """
+    Read either top-level or nested YAML paths.
+
+    Example:
+        _deep_first_present(data, [("feature_set",), ("experiment", "feature_set")])
+    """
+    for path in paths:
+        current: Any = data
+
+        for part in path:
+            if not isinstance(current, dict) or part not in current:
+                current = None
+                break
+            current = current[part]
+
+        if current is not None:
+            return current
+
+    return default
+
+
+def _required_value(data: dict[str, Any], field_name: str, paths: list[tuple[str, ...]]) -> Any:
+    value = _deep_first_present(data, paths)
+
+    if value is None:
+        readable_paths = [".".join(path) for path in paths]
+        raise ValueError(
+            f"Config is missing required field '{field_name}'. "
+            f"Tried: {readable_paths}"
+        )
+
+    return value
 
 
 def load_production_signal_config(
@@ -183,55 +218,154 @@ def load_production_signal_config(
 
     data = load_yaml_like(path)
 
-    candidate_name = _first_present(
+    loaded_ticker = _deep_first_present(
         data,
-        ["candidate_name", "name", "production_candidate_name"],
+        [
+            ("ticker",),
+            ("experiment", "ticker"),
+        ],
+        ticker,
+    )
+
+    loaded_profile = _deep_first_present(
+        data,
+        [
+            ("profile",),
+            ("experiment", "profile"),
+        ],
+        profile,
+    )
+
+    candidate_name = _deep_first_present(
+        data,
+        [
+            ("candidate_name",),
+            ("production_candidate_name",),
+            ("candidate", "name"),
+            ("production_candidate", "name"),
+            ("experiment", "candidate_name"),
+            ("experiment", "name"),
+            ("status", "stage"),
+        ],
         "production_candidate",
     )
 
-    feature_set = _first_present(
+    feature_set = _required_value(
         data,
-        ["feature_set", "features", "feature_set_name"],
-        None,
+        "feature_set",
+        [
+            ("feature_set",),
+            ("feature_set_name",),
+            ("features",),
+            ("candidate", "feature_set"),
+            ("production_candidate", "feature_set"),
+            ("setup", "feature_set"),
+            ("model", "feature_set"),
+            ("strategy", "feature_set"),
+            ("experiment", "feature_set"),
+        ],
     )
 
-    if feature_set is None:
-        raise ValueError(f"Config is missing feature_set: {path}")
+    lookahead = _required_value(
+        data,
+        "lookahead",
+        [
+            ("lookahead",),
+            ("LOOKAHEAD",),
+            ("setup", "lookahead"),
+            ("model", "lookahead"),
+            ("strategy", "lookahead"),
+            ("frozen_setup", "lookahead"),
+        ],
+    )
 
-    lookahead = _first_present(data, ["lookahead", "LOOKAHEAD"], None)
-    tp = _first_present(data, ["tp", "TP"], None)
-    sl = _first_present(data, ["sl", "SL"], None)
-    threshold = _first_present(data, ["threshold", "THRESH", "thresh"], None)
+    tp = _required_value(
+        data,
+        "tp",
+        [
+            ("tp",),
+            ("TP",),
+            ("setup", "tp"),
+            ("model", "tp"),
+            ("strategy", "tp"),
+            ("frozen_setup", "tp"),
+        ],
+    )
 
-    missing = [
-        name
-        for name, value in {
-            "lookahead": lookahead,
-            "tp": tp,
-            "sl": sl,
-            "threshold": threshold,
-        }.items()
-        if value is None
-    ]
+    sl = _required_value(
+        data,
+        "sl",
+        [
+            ("sl",),
+            ("SL",),
+            ("setup", "sl"),
+            ("model", "sl"),
+            ("strategy", "sl"),
+            ("frozen_setup", "sl"),
+        ],
+    )
 
-    if missing:
-        raise ValueError(f"Config is missing required setup values: {missing}")
+    threshold = _required_value(
+        data,
+        "threshold",
+        [
+            ("threshold",),
+            ("THRESH",),
+            ("thresh",),
+            ("setup", "threshold"),
+            ("model", "threshold"),
+            ("strategy", "threshold"),
+            ("frozen_setup", "threshold"),
+        ],
+    )
+
+    round_trip_cost = _deep_first_present(
+        data,
+        [
+            ("round_trip_cost",),
+            ("roundtrip_cost",),
+            ("cost",),
+            ("setup", "round_trip_cost"),
+            ("risk_assumptions", "round_trip_cost"),
+            ("risk_assumptions", "round_trip_cost_stress"),
+            ("risk_assumptions", "round_trip_cost_base"),
+        ],
+        0.0,
+    )
+
+    min_edge_vs_breakeven = _deep_first_present(
+        data,
+        [
+            ("min_edge_vs_breakeven",),
+            ("min_edge",),
+            ("setup", "min_edge_vs_breakeven"),
+            ("risk_assumptions", "min_edge_vs_breakeven"),
+        ],
+        0.0,
+    )
+
+    watch_margin = _deep_first_present(
+        data,
+        [
+            ("watch_margin",),
+            ("setup", "watch_margin"),
+            ("risk_assumptions", "watch_margin"),
+        ],
+        0.05,
+    )
 
     return ProductionSignalConfig(
-        ticker=str(_first_present(data, ["ticker"], ticker)).upper(),
-        profile=str(_first_present(data, ["profile"], profile)).upper(),
+        ticker=str(loaded_ticker).upper(),
+        profile=str(loaded_profile).upper(),
         candidate_name=str(candidate_name),
         feature_set=str(feature_set),
         lookahead=int(lookahead),
         tp=float(tp),
         sl=float(sl),
         threshold=float(threshold),
-        round_trip_cost=float(
-            _first_present(data, ["round_trip_cost", "cost", "roundtrip_cost"], 0.0)
-        ),
-        min_edge_vs_breakeven=float(
-            _first_present(data, ["min_edge_vs_breakeven", "min_edge"], 0.0)
-        ),
+        round_trip_cost=float(round_trip_cost),
+        min_edge_vs_breakeven=float(min_edge_vs_breakeven),
+        watch_margin=float(watch_margin),
     )
 
 
