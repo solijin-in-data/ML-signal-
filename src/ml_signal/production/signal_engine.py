@@ -1,35 +1,19 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+from ml_signal.evaluation.breakeven import calculate_breakeven_precision
+from ml_signal.models.factory import calculate_scale_pos_weight, create_xgb_model
+from ml_signal.pipelines.training_frame import build_latest_training_frame
 from ml_signal.production.config_loader import ProductionSignalConfig
 from ml_signal.production.signal_report import now_iso
 
 
-MODULE_PATH = Path(__file__).resolve()
-PROJECT_ROOT = MODULE_PATH.parents[3]
-SRC_ROOT = PROJECT_ROOT / "src"
-
-for path in [PROJECT_ROOT, SRC_ROOT]:
-    path_text = str(path)
-    if path_text not in sys.path:
-        sys.path.insert(0, path_text)
-
-
-# Transitional bridge:
-# The production signal engine is now located under src/ml_signal/production,
-# while a few mature research utilities still live in feature_experiment_runner.py.
-# Future patches can replace this bridge with pure src/ml_signal modules.
-import feature_experiment_runner as exp  # noqa: E402
-
-
-SCRIPT_VERSION = "phase3_signal_engine_decoupled_cli_v1"
+SCRIPT_VERSION = "phase3_extract_research_utilities_v1"
 
 
 def _safe_float(value: Any) -> float | None:
@@ -60,6 +44,8 @@ def load_research_evidence(
     The signal engine can still run without this file. Evidence is included so
     daily signals remain connected to the research validation process.
     """
+    from ml_signal.pipelines.feature_builder import PROJECT_ROOT
+
     evidence_path = (
         PROJECT_ROOT
         / "outputs"
@@ -138,77 +124,6 @@ def get_top_model_features(
     ]
 
 
-def build_training_frame(
-    ticker: str,
-    feature_set: str,
-    lookahead: int,
-    tp: float,
-    sl: float,
-) -> tuple[pd.DataFrame, pd.DataFrame, list[str], pd.Timestamp]:
-    df_vnindex = exp.radar.load_data(exp.VNINDEX_FILE, is_vnindex=True)
-
-    if df_vnindex is None:
-        raise ValueError(f"VNINDEX data could not be loaded: {exp.VNINDEX_FILE}")
-
-    df_features = exp.build_feature_dataframe(ticker, df_vnindex)
-
-    feature_sets = exp.get_feature_sets()
-
-    if feature_set not in feature_sets:
-        available = ", ".join(sorted(feature_sets.keys()))
-        raise ValueError(
-            f"Unknown feature_set={feature_set}. Available feature sets: {available}"
-        )
-
-    feature_cols = exp.validate_feature_columns(df_features, feature_sets[feature_set])
-
-    latest_candidates = (
-        df_features
-        .replace([np.inf, -np.inf], np.nan)
-        .dropna(subset=feature_cols + ["Close"])
-    )
-
-    if latest_candidates.empty:
-        raise ValueError("No latest row has a complete feature vector.")
-
-    latest_feature_date = latest_candidates.index.max()
-
-    df_labeled = exp.radar.calculate_targets(
-        df_features,
-        lookahead=lookahead,
-        tp=tp,
-        sl=sl,
-    )
-
-    required_cols = feature_cols + [
-        "Target",
-        "Exit_Return",
-        "Holding_Days",
-        "Timeout",
-    ]
-
-    df_labeled = (
-        df_labeled
-        .replace([np.inf, -np.inf], np.nan)
-        .dropna(subset=required_cols)
-        .sort_index()
-    )
-
-    # Do not train on the row being scored, even when historical target values
-    # exist for that date.
-    df_train = df_labeled[df_labeled.index < latest_feature_date].copy()
-
-    if len(df_train) < 100:
-        raise ValueError(
-            f"Insufficient labeled training rows before latest signal date: {len(df_train)}"
-        )
-
-    if df_train["Target"].nunique() < 2:
-        raise ValueError("Training target has only one class.")
-
-    return df_features, df_train, feature_cols, latest_feature_date
-
-
 def decide_action(
     probability: float,
     threshold: float,
@@ -231,7 +146,7 @@ def decide_action(
 
 
 def run_latest_signal(config: ProductionSignalConfig) -> dict[str, Any]:
-    df_features, df_train, feature_cols, latest_feature_date = build_training_frame(
+    df_features, df_train, feature_cols, latest_feature_date = build_latest_training_frame(
         ticker=config.ticker,
         feature_set=config.feature_set,
         lookahead=config.lookahead,
@@ -249,14 +164,14 @@ def run_latest_signal(config: ProductionSignalConfig) -> dict[str, Any]:
     X_train = scaler.fit_transform(X_train_raw)
     latest_x = scaler.transform(latest_x_raw)
 
-    model = exp.radar.create_xgb_model(
-        exp.radar.calculate_scale_pos_weight(y_train)
+    model = create_xgb_model(
+        calculate_scale_pos_weight(y_train)
     )
 
     model.fit(X_train, y_train)
     probability = float(model.predict_proba(latest_x)[0, 1])
 
-    breakeven_precision = exp.calculate_breakeven_precision(
+    breakeven_precision = calculate_breakeven_precision(
         tp=config.tp,
         sl=config.sl,
         round_trip_cost=config.round_trip_cost,
@@ -326,7 +241,6 @@ def run_latest_signal(config: ProductionSignalConfig) -> dict[str, Any]:
 
 __all__ = [
     "SCRIPT_VERSION",
-    "build_training_frame",
     "decide_action",
     "get_top_model_features",
     "load_research_evidence",
