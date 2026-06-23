@@ -1,0 +1,16 @@
+tickers:
+  CTD:
+    sector: construction
+    exchange: HOSE
+    benchmark: VNINDEX
+    market_data: data/processed_data/CTD_standardized.csv
+    valuation_data: data/processed_data/valuation/CTD_valuation_standardized.csv
+    active: true
+
+  VPB:
+    sector: banking
+    exchange: HOSE
+    benchmark: VNINDEX
+    market_data: data/processed_data/VPB_standardized.csv
+    valuation_data: data/processed_data/valuation/VPB_valuation_standardized.csv
+    active: false

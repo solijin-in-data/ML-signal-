@@ -1,0 +1,21 @@
+experiment:
+  name: ctd_swing_production_candidate_v1
+  ticker: CTD
+  profile: SWING
+  feature_set: ablation_trend_recovery_minus_market_regime_v1
+
+frozen_setup:
+  lookahead: 30
+  tp: 0.08
+  sl: -0.05
+  threshold: 0.55
+
+risk_assumptions:
+  min_edge_vs_breakeven: 0.02
+  round_trip_cost: 0.003
+
+status:
+  stage: production_candidate_low_cost
+  notes: >
+    Passed no-cost frozen grid. Cost 0.3% was close to strict threshold.
+    Treat as research-production candidate until cost-aware feature work is complete.
