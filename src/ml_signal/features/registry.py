@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from ml_signal import core_compat as radar
 from ml_signal.features.valuation import get_valuation_feature_columns
+from ml_signal.features.liquidity import LIQUIDITY_COST_COLUMNS
+from ml_signal.features.recovery import RECOVERY_QUALITY_COLUMNS
+from ml_signal.features.noise import NOISE_FILTER_COLUMNS
 
 
 def unique_preserve_order(items: list[str]) -> list[str]:
@@ -186,6 +189,48 @@ def get_feature_sets() -> dict[str, list[str]]:
 
             "ablation_recovery_valuation_minus_valuation_v1": unique_preserve_order(
                 subtract_columns(recovery_valuation_cols, valuation_cols)
+            ),
+        }
+    )
+
+
+    # -------------------------------------------------------------------------
+    # Cost-resilient recovery feature sets
+    # -------------------------------------------------------------------------
+    # These are designed to test whether the CTD recovery setup remains robust
+    # after round-trip cost/slippage assumptions are added.
+    base_cost_resilient_cols = feature_sets.get(
+        "ablation_trend_recovery_minus_market_regime_v1",
+        feature_sets.get("candidate_trend_recovery_v1", baseline),
+    )
+
+    cost_resilient_cols = unique_preserve_order(
+        base_cost_resilient_cols
+        + LIQUIDITY_COST_COLUMNS
+        + RECOVERY_QUALITY_COLUMNS
+        + NOISE_FILTER_COLUMNS
+    )
+
+    feature_sets.update(
+        {
+            "candidate_cost_resilient_recovery_v1": cost_resilient_cols,
+
+            "ablation_cost_resilient_recovery_full_v1": cost_resilient_cols,
+
+            "candidate_cost_resilient_recovery_no_noise_v1": unique_preserve_order(
+                subtract_columns(cost_resilient_cols, NOISE_FILTER_COLUMNS)
+            ),
+
+            "ablation_cost_resilient_recovery_minus_liquidity_v1": unique_preserve_order(
+                subtract_columns(cost_resilient_cols, LIQUIDITY_COST_COLUMNS)
+            ),
+
+            "ablation_cost_resilient_recovery_minus_recovery_quality_v1": unique_preserve_order(
+                subtract_columns(cost_resilient_cols, RECOVERY_QUALITY_COLUMNS)
+            ),
+
+            "ablation_cost_resilient_recovery_minus_noise_filter_v1": unique_preserve_order(
+                subtract_columns(cost_resilient_cols, NOISE_FILTER_COLUMNS)
             ),
         }
     )

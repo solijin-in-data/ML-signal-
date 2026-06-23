@@ -6,15 +6,17 @@ import pandas as pd
 from ml_signal.features.momentum import add_momentum_features
 from ml_signal.features.trend import add_trend_quality_features
 from ml_signal.features.volume import add_volume_features
-from ml_signal.features.recovery import add_recovery_features
+from ml_signal.features.recovery import (
+    add_recovery_features,
+    add_recovery_quality_features,
+)
+from ml_signal.features.liquidity import add_liquidity_cost_features
+from ml_signal.features.noise import add_noise_filter_features
 
 
 def add_candidate_features(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Add experimental feature families on top of baseline features.
-
-    All features use current and past information only.
-    """
+    # Add experimental feature families on top of baseline features.
+    # All features use current and past information only.
     df = df.copy().sort_index()
 
     if "Log_Return" not in df.columns:
@@ -24,6 +26,11 @@ def add_candidate_features(df: pd.DataFrame) -> pd.DataFrame:
     df = add_trend_quality_features(df)
     df = add_volume_features(df)
     df = add_recovery_features(df)
+
+    # Cost-resilient recovery extension.
+    df = add_liquidity_cost_features(df)
+    df = add_recovery_quality_features(df)
+    df = add_noise_filter_features(df)
 
     return df.replace([np.inf, -np.inf], np.nan)
 
