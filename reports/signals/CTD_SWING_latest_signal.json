@@ -1,0 +1,91 @@
+{
+  "ticker": "CTD",
+  "profile": "SWING",
+  "candidate_name": "production_candidate_cost_resilient_v1",
+  "setup": {
+    "feature_set": "candidate_cost_resilient_recovery_no_noise_v1",
+    "lookahead": 40,
+    "tp": 0.1,
+    "sl": -0.05,
+    "threshold": 0.6,
+    "round_trip_cost": 0.005,
+    "min_edge_vs_breakeven": 0.02
+  },
+  "data": {
+    "latest_feature_date": "2026-06-16",
+    "latest_data_date": "2026-06-16",
+    "data_lag_days": 0,
+    "latest_close": 72700.0,
+    "training_rows": 2776,
+    "feature_columns": 34
+  },
+  "signal": {
+    "probability": 0.1957000494003296,
+    "threshold": 0.6,
+    "breakeven_precision": 0.3666666666666667,
+    "min_required_precision": 0.3866666666666667,
+    "action": "HOLD",
+    "reason": "Probability is below the threshold."
+  },
+  "research_evidence": {
+    "source": "C:\\Users\\tuana\\OneDrive\\Documents\\GitHub\\ML-signal-\\outputs\\walkforward_frozen_grid\\CTD_SWING_frozen_grid_stability_score.csv",
+    "pass_periods": null,
+    "min_edge": null,
+    "avg_return": null,
+    "round_trip_cost": 0.005
+  },
+  "top_model_features": [
+    {
+      "rank": 1,
+      "feature": "Distance_52W_Low",
+      "importance": 0.07320357859134674
+    },
+    {
+      "rank": 2,
+      "feature": "Amihud_Illiquidity_20",
+      "importance": 0.06896205246448517
+    },
+    {
+      "rank": 3,
+      "feature": "Days_Since_60D_Low",
+      "importance": 0.060623642057180405
+    },
+    {
+      "rank": 4,
+      "feature": "Recovery_20_From_60D_Low",
+      "importance": 0.05615456402301788
+    },
+    {
+      "rank": 5,
+      "feature": "Dollar_Volume",
+      "importance": 0.04874369502067566
+    },
+    {
+      "rank": 6,
+      "feature": "Volatility",
+      "importance": 0.047068215906620026
+    },
+    {
+      "rank": 7,
+      "feature": "Foreign_Net_20D_Mean",
+      "importance": 0.043960489332675934
+    },
+    {
+      "rank": 8,
+      "feature": "EMA_21_55_Gap",
+      "importance": 0.04331046715378761
+    },
+    {
+      "rank": 9,
+      "feature": "Drawdown_60",
+      "importance": 0.04165663197636604
+    },
+    {
+      "rank": 10,
+      "feature": "Distance_52W_High",
+      "importance": 0.04014727845788002
+    }
+  ],
+  "script_version": "phase3_production_signal_runner_v1",
+  "generated_at": "2026-06-23T15:06:26"
+}
