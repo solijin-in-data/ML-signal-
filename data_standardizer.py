@@ -8,6 +8,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from typing import cast
+
 
 # =============================================================================
 # PROJECT PATH CONFIG
@@ -185,7 +187,7 @@ ALIAS_LOOKUP = build_alias_lookup()
 
 def read_csv_smart(file_path: Path) -> pd.DataFrame:
     encodings = ["utf-8-sig", "utf-8", "cp1258", "cp1252", "latin1"]
-    last_error = None
+    last_error: Exception | None = None
 
     for encoding in encodings:
         try:
@@ -199,7 +201,10 @@ def read_csv_smart(file_path: Path) -> pd.DataFrame:
         except Exception as e:
             last_error = e
 
-    raise last_error
+    if last_error is not None:
+        raise last_error
+    
+    raise RuntimeError(f"Counld not read CSV file: {file_path}")
 
 
 def coalesce_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -212,13 +217,29 @@ def coalesce_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     result = pd.DataFrame(index=df.index)
 
-    for col in pd.unique(df.columns):
-        subset = df.loc[:, df.columns == col]
+    unique_columns = pd.Index(df.columns).drop_duplicates()
 
-        if subset.shape[1] == 1:
-            result[col] = subset.iloc[:, 0]
+    for col in unique_columns:
+        positions = [
+            idx for idx, column_name in enumerate(df.columns)
+            if column_name == col
+        ]
+
+        subset = df.take(positions, axis="columns")
+
+        if len(positions) == 1:
+            series = cast(
+                pd.Series,
+                subset.take([0], axis="columns").squeeze(axis="columns"),
+            )
         else:
-            result[col] = subset.bfill(axis=1).iloc[:, 0]
+            filled = subset.bfill(axis="columns")
+            series = cast(
+                pd.Series,
+                filled.take([0], axis="columns").squeeze(axis="columns"),
+            )
+
+        result[str(col)] = series
 
     return result
 
